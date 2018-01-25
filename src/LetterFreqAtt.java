@@ -12,6 +12,8 @@ public class LetterFreqAtt {
         for (int i = 0; i < 26; i++) {
             textFreq[i] = new Letters((char) (97 + i), 0);
         }
+
+        //Setting frequencies
         Arrays.sort(freqV, Collections.reverseOrder());
         for (int i = 0; i < encryptedText.length(); i++) {
             if (encryptedText.charAt(i) > 96 && encryptedText.charAt(i) < 123)
@@ -36,7 +38,10 @@ public class LetterFreqAtt {
                 index = encryptedText.indexOf(currLetter, (index + 1));
             }
         }
+
+        //Used to replace chars
         StringBuilder plainText = new StringBuilder(encryptedText);
+        //For the two most common
         boolean[] taken = new boolean[26];
         int mostComm = textFreq[0].getLetter() - 97;
         int secMostComm = textFreq[1].getLetter() - 97;
@@ -50,12 +55,36 @@ public class LetterFreqAtt {
         }
         taken[4] = true;
         taken[19] = true;
+
+
         for (int poss = 0; poss < possibilities; poss++) {
+            // For every possibility after the first it will make a switch of the placement of two letters
+            // in the textFreq array as long as theyre within 10% of each other. One switch per poss.
+            if(poss>0){
+                for(int j=2+poss;j<26;j++){
+                    double val = textFreq[j].freq;
+                    boolean switchV=false;
+                    for(int k=j+1;k<26;k++){
+                        double val2 = textFreq[k].freq;
+                        if((val*0.9)<val2 && val2<(val*1.1)){
+                                Letters temp = textFreq[j];
+                                textFreq[j] = textFreq[k];
+                                textFreq[k] = temp;
+                                switchV = true;
+                                break;
+                        }
+                    }
+                    if(switchV)
+                        break;
+                }
+            }
+            // Looks for a similar frequency within initally 5% range, if that fails expands by 5%
+            // and if that fails another 5% and so on until it finds a letter. Then replaces it in the text.
             for (int i = 2; i < 26; i++) {
                 double mult = 0;
                 if (textFreq[i].freq != 0) {
-                    double max = textFreq[i].freq * (1.05 + (0.05*poss));
-                    double min = textFreq[i].freq * (0.95- (0.05*poss));
+                    double max = textFreq[i].freq * (1.05);
+                    double min = textFreq[i].freq * (0.95);
                     int place = 0;
                     double freq = freqV[place];
                     while (true) {
